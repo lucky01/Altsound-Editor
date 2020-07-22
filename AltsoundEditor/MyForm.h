@@ -11,6 +11,7 @@
 #include <conio.h>
 #include "csvreader.h"
 #include <iostream>
+#include "bass.h"
 
 
 typedef struct _pin_samples { // holds data for all sound files found
@@ -22,7 +23,7 @@ typedef struct _pin_samples { // holds data for all sound files found
 	signed char* ducking;
 	unsigned char* loop;
 	unsigned char* stop;
-	unsigned int num_files;
+	int num_files;
 } Pin_samples;
 
 FILE *csvfile;
@@ -30,6 +31,10 @@ char* srcfileName;
 CsvReader* c;
 static Pin_samples psd;
 bool backupOriginal = false;
+int device = -1; // Default Sounddevice
+int freq = 44100; // Sample rate (Hz)
+HSTREAM streamHandle; // Handle for open stream
+
 
 
 
@@ -494,10 +499,12 @@ namespace AltSoundEditor {
 
 
 private: System::Void MyForm_Closed (System::Object^  sender, System::EventArgs^  e) {
+	BASS_Free();
 	if (srcfileName)
 		Marshal::FreeHGlobal((IntPtr)srcfileName);
 }
 private: System::Void MyForm_Load(System::Object^  sender, System::EventArgs^  e) {
+	BASS_Init(device, freq, 0, 0, NULL);
 	for (int i = 0; i <= 1; i++) {
 		CHANNEL->Items->Add(i.ToString());
 		STOP->Items->Add(i.ToString());
@@ -644,45 +651,45 @@ private: System::Void loadToolStripMenuItem_Click(System::Object^ sender, System
 		}
 	}
 }
-private: System::Void ID_SelectedIndexChanged(System::Object^ sender, System::EventArgs^ e) {
+	private: System::Void ID_SelectedIndexChanged(System::Object^ sender, System::EventArgs^ e) {
 
-	btnMUSIC->ForeColor = System::Drawing::Color::Black;
-	btnVOICE->ForeColor = System::Drawing::Color::Black;
-	btnSFX->ForeColor = System::Drawing::Color::Black;
-	btnSINGLE->ForeColor = System::Drawing::Color::Black;
-	btnJINGLE->ForeColor = System::Drawing::Color::Black;
-
-
-	int index = ID->SelectedIndex;
-	CHANNEL->SelectedIndex = psd.channel[index];
-	DUCK->SelectedIndex = psd.ducking[index];
-	GAIN->SelectedIndex = psd.gain[index];
-	LOOP->SelectedIndex = psd.loop[index];
-	STOP->SelectedIndex = psd.stop[index];
-	String^ strNew = gcnew String(psd.description[index]);
-	NAME->Text = strNew;
-	strNew = gcnew String(psd.filename[index]);
-	FNAME->Text = strNew;
-
-	if (CHANNEL->SelectedIndex == 0)
-		btnMUSIC->ForeColor = System::Drawing::Color::Red;
-
-	if (CHANNEL->SelectedIndex == 2 && DUCK->SelectedIndex > 70)
-		btnSFX->ForeColor = System::Drawing::Color::Red;
-
-	if (CHANNEL->SelectedIndex == 2 && DUCK->SelectedIndex <= 70)
-		btnVOICE->ForeColor = System::Drawing::Color::Red;
-
-	if (CHANNEL->SelectedIndex == 1 && STOP->SelectedIndex == 0)
-		btnJINGLE->ForeColor = System::Drawing::Color::Red;
-
-	if (CHANNEL->SelectedIndex == 1 && STOP->SelectedIndex == 1)
-		btnSINGLE->ForeColor = System::Drawing::Color::Red;
+		btnMUSIC->ForeColor = System::Drawing::Color::Black;
+		btnVOICE->ForeColor = System::Drawing::Color::Black;
+		btnSFX->ForeColor = System::Drawing::Color::Black;
+		btnSINGLE->ForeColor = System::Drawing::Color::Black;
+		btnJINGLE->ForeColor = System::Drawing::Color::Black;
 
 
+		int index = ID->SelectedIndex;
+		CHANNEL->SelectedIndex = psd.channel[index];
+		DUCK->SelectedIndex = psd.ducking[index];
+		GAIN->SelectedIndex = psd.gain[index];
+		LOOP->SelectedIndex = psd.loop[index];
+		STOP->SelectedIndex = psd.stop[index];
+		String^ strNew = gcnew String(psd.description[index]);
+		NAME->Text = strNew;
+		strNew = gcnew String(psd.filename[index]);
+		FNAME->Text = strNew;
 
-	PlaySound(NULL, 0, 0);
-}
+		if (CHANNEL->SelectedIndex == 0)
+			btnMUSIC->ForeColor = System::Drawing::Color::Red;
+
+		if (CHANNEL->SelectedIndex == 2 && DUCK->SelectedIndex > 70)
+			btnSFX->ForeColor = System::Drawing::Color::Red;
+
+		if (CHANNEL->SelectedIndex == 2 && DUCK->SelectedIndex <= 70)
+			btnVOICE->ForeColor = System::Drawing::Color::Red;
+
+		if (CHANNEL->SelectedIndex == 1 && STOP->SelectedIndex == 0)
+			btnJINGLE->ForeColor = System::Drawing::Color::Red;
+
+		if (CHANNEL->SelectedIndex == 1 && STOP->SelectedIndex == 1)
+			btnSINGLE->ForeColor = System::Drawing::Color::Red;
+
+
+		BASS_ChannelStop(streamHandle);
+	}
+	
 private: System::Void saveToolStripMenuItem_Click(System::Object^ sender, System::EventArgs^ e) {
 	
 	if (!backupOriginal) {
@@ -850,13 +857,12 @@ private: System::Void btnPLAY_Click(System::Object^ sender, System::EventArgs^ e
 	strcpy(soundFile, srcfileName);
 	char* ptr = strrchr(soundFile, '\\');
 	strcpy(ptr + 1, psd.filename[index]);
-	wchar_t* wString = new wchar_t[4096];
-	MultiByteToWideChar(CP_ACP, 0, soundFile, -1, wString, 4096);
-	PlaySound(wString, NULL, SND_ASYNC | SND_FILENAME | SND_NODEFAULT);
+	streamHandle = BASS_StreamCreateFile(FALSE, soundFile, 0, 0, 0);
+	BASS_ChannelPlay(streamHandle, FALSE);
 	free(soundFile);
 }
 private: System::Void btnSTOP_Click(System::Object^ sender, System::EventArgs^ e) {
-	PlaySound(NULL, 0, 0);
+	BASS_ChannelStop(streamHandle);
 }
 private: System::Void FNAME_Click(System::Object^ sender, System::EventArgs^ e) {
 	if (ID->SelectedIndex == -1)

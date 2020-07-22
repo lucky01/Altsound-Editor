@@ -895,7 +895,7 @@ private: System::Void btnAdd_Click(System::Object^ sender, System::EventArgs^ e)
 	
 
 	int k = 0;
-	for (int i = 0; i <= tmp.num_files; i++)
+	for (int i = 0; i < tmp.num_files; i++)
 	{
 		if (i < ID->SelectedIndex) {
 			k = i;
@@ -908,7 +908,7 @@ private: System::Void btnAdd_Click(System::Object^ sender, System::EventArgs^ e)
 			tmp.filename[i] = psd.filename[k];
 			tmp.description[i] = psd.description[k];
 		}
-		if (k == ID->SelectedIndex) {
+		if (i == ID->SelectedIndex) {
 			tmp.ID[i] = psd.ID[i];
 			tmp.channel[i] = psd.channel[i];
 			tmp.gain[i] = psd.gain[i];
@@ -954,7 +954,7 @@ private: System::Void btnAdd_Click(System::Object^ sender, System::EventArgs^ e)
 	old.num_files = 0;
 
 	ID->Items->Clear();
-	for (int i = 0; i <= psd.num_files; i++)
+	for (int i = 0; i < psd.num_files; i++)
 		ID->Items->Add(psd.ID[i].ToString("X4"));
 }
 private: System::Void btnDel_Click(System::Object^ sender, System::EventArgs^ e) {
@@ -975,7 +975,7 @@ private: System::Void btnDel_Click(System::Object^ sender, System::EventArgs^ e)
 
 
 	int k = 0;
-	for (int i = 0; i <= psd.num_files; i++)
+	for (int i = 0; i < psd.num_files; i++)
 	{
 		if (i < ID->SelectedIndex) {
 			k = i;
@@ -1024,7 +1024,7 @@ private: System::Void btnDel_Click(System::Object^ sender, System::EventArgs^ e)
 	old.num_files = 0;
 
 	ID->Items->Clear();
-	for (int i = 0; i <= psd.num_files; i++)
+	for (int i = 0; i < psd.num_files; i++)
 		ID->Items->Add(psd.ID[i].ToString("X4"));
 
 	ID->SelectedIndex = 0;

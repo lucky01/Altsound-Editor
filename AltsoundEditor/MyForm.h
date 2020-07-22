@@ -121,6 +121,7 @@ namespace AltSoundEditor {
 	private: System::Windows::Forms::ToolStripMenuItem^ saveToolStripMenuItem;
 	private: System::Windows::Forms::Button^ btnAdd;
 	private: System::Windows::Forms::Button^ btnDel;
+	private: System::Windows::Forms::CheckBox^ AUTO;
 
 
 
@@ -178,6 +179,7 @@ namespace AltSoundEditor {
 			this->saveToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->btnAdd = (gcnew System::Windows::Forms::Button());
 			this->btnDel = (gcnew System::Windows::Forms::Button());
+			this->AUTO = (gcnew System::Windows::Forms::CheckBox());
 			this->menuStrip1->SuspendLayout();
 			this->SuspendLayout();
 			// 
@@ -332,7 +334,7 @@ namespace AltSoundEditor {
 			// 
 			this->btnPLAY->Location = System::Drawing::Point(12, 92);
 			this->btnPLAY->Name = L"btnPLAY";
-			this->btnPLAY->Size = System::Drawing::Size(60, 23);
+			this->btnPLAY->Size = System::Drawing::Size(53, 23);
 			this->btnPLAY->TabIndex = 17;
 			this->btnPLAY->Text = L"PLAY";
 			this->btnPLAY->UseVisualStyleBackColor = true;
@@ -342,7 +344,7 @@ namespace AltSoundEditor {
 			// 
 			this->btnSTOP->Location = System::Drawing::Point(78, 92);
 			this->btnSTOP->Name = L"btnSTOP";
-			this->btnSTOP->Size = System::Drawing::Size(60, 23);
+			this->btnSTOP->Size = System::Drawing::Size(51, 23);
 			this->btnSTOP->TabIndex = 18;
 			this->btnSTOP->Text = L"STOP";
 			this->btnSTOP->UseVisualStyleBackColor = true;
@@ -350,7 +352,7 @@ namespace AltSoundEditor {
 			// 
 			// btnMUSIC
 			// 
-			this->btnMUSIC->Location = System::Drawing::Point(169, 92);
+			this->btnMUSIC->Location = System::Drawing::Point(196, 92);
 			this->btnMUSIC->Name = L"btnMUSIC";
 			this->btnMUSIC->Size = System::Drawing::Size(60, 23);
 			this->btnMUSIC->TabIndex = 19;
@@ -360,7 +362,7 @@ namespace AltSoundEditor {
 			// 
 			// btnVOICE
 			// 
-			this->btnVOICE->Location = System::Drawing::Point(235, 92);
+			this->btnVOICE->Location = System::Drawing::Point(262, 92);
 			this->btnVOICE->Name = L"btnVOICE";
 			this->btnVOICE->Size = System::Drawing::Size(60, 23);
 			this->btnVOICE->TabIndex = 20;
@@ -370,7 +372,7 @@ namespace AltSoundEditor {
 			// 
 			// btnSFX
 			// 
-			this->btnSFX->Location = System::Drawing::Point(301, 92);
+			this->btnSFX->Location = System::Drawing::Point(328, 92);
 			this->btnSFX->Name = L"btnSFX";
 			this->btnSFX->Size = System::Drawing::Size(60, 23);
 			this->btnSFX->TabIndex = 21;
@@ -380,7 +382,7 @@ namespace AltSoundEditor {
 			// 
 			// btnSINGLE
 			// 
-			this->btnSINGLE->Location = System::Drawing::Point(367, 92);
+			this->btnSINGLE->Location = System::Drawing::Point(394, 92);
 			this->btnSINGLE->Name = L"btnSINGLE";
 			this->btnSINGLE->Size = System::Drawing::Size(60, 23);
 			this->btnSINGLE->TabIndex = 22;
@@ -390,7 +392,7 @@ namespace AltSoundEditor {
 			// 
 			// btnJINGLE
 			// 
-			this->btnJINGLE->Location = System::Drawing::Point(433, 92);
+			this->btnJINGLE->Location = System::Drawing::Point(460, 92);
 			this->btnJINGLE->Name = L"btnJINGLE";
 			this->btnJINGLE->Size = System::Drawing::Size(60, 23);
 			this->btnJINGLE->TabIndex = 23;
@@ -451,11 +453,22 @@ namespace AltSoundEditor {
 			this->btnDel->UseVisualStyleBackColor = true;
 			this->btnDel->Click += gcnew System::EventHandler(this, &MyForm::btnDel_Click);
 			// 
+			// AUTO
+			// 
+			this->AUTO->AutoSize = true;
+			this->AUTO->Location = System::Drawing::Point(144, 96);
+			this->AUTO->Name = L"AUTO";
+			this->AUTO->Size = System::Drawing::Size(47, 17);
+			this->AUTO->TabIndex = 27;
+			this->AUTO->Text = L"auto";
+			this->AUTO->UseVisualStyleBackColor = true;
+			// 
 			// MyForm
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->ClientSize = System::Drawing::Size(677, 136);
+			this->Controls->Add(this->AUTO);
 			this->Controls->Add(this->btnDel);
 			this->Controls->Add(this->btnAdd);
 			this->Controls->Add(this->btnJINGLE);
@@ -685,9 +698,11 @@ private: System::Void loadToolStripMenuItem_Click(System::Object^ sender, System
 
 		if (CHANNEL->SelectedIndex == 1 && STOP->SelectedIndex == 1)
 			btnSINGLE->ForeColor = System::Drawing::Color::Red;
-
-
+		
 		BASS_ChannelStop(streamHandle);
+
+		if (AUTO->Checked)
+			btnPLAY_Click(sender,e);
 	}
 	
 private: System::Void saveToolStripMenuItem_Click(System::Object^ sender, System::EventArgs^ e) {
@@ -779,6 +794,8 @@ private: System::Void btnMUSIC_Click(System::Object^ sender, System::EventArgs^ 
 	btnSINGLE->ForeColor = System::Drawing::Color::Black;
 	btnJINGLE->ForeColor = System::Drawing::Color::Black;
 
+	if (AUTO->Checked && ID->SelectedIndex < ID->Items->Count-1) 
+		ID->SelectedIndex++;
 }
 private: System::Void btnVOICE_Click(System::Object^ sender, System::EventArgs^ e) {
 	if (ID->SelectedIndex == -1)
@@ -796,6 +813,8 @@ private: System::Void btnVOICE_Click(System::Object^ sender, System::EventArgs^ 
 	btnSINGLE->ForeColor = System::Drawing::Color::Black;
 	btnJINGLE->ForeColor = System::Drawing::Color::Black;
 
+	if (AUTO->Checked && ID->SelectedIndex < ID->Items->Count-1)
+		ID->SelectedIndex++;
 }
 private: System::Void btnSFX_Click(System::Object^ sender, System::EventArgs^ e) {
 	if (ID->SelectedIndex == -1)
@@ -813,6 +832,8 @@ private: System::Void btnSFX_Click(System::Object^ sender, System::EventArgs^ e)
 	btnSINGLE->ForeColor = System::Drawing::Color::Black;
 	btnJINGLE->ForeColor = System::Drawing::Color::Black;
 
+	if (AUTO->Checked && ID->SelectedIndex < ID->Items->Count-1)
+		ID->SelectedIndex++;
 }
 private: System::Void btnSINGLE_Click(System::Object^ sender, System::EventArgs^ e) {
 	if (ID->SelectedIndex == -1)
@@ -830,6 +851,8 @@ private: System::Void btnSINGLE_Click(System::Object^ sender, System::EventArgs^
 	btnSINGLE->ForeColor = System::Drawing::Color::Red;
 	btnJINGLE->ForeColor = System::Drawing::Color::Black;
 
+	if (AUTO->Checked && ID->SelectedIndex < ID->Items->Count-1)
+		ID->SelectedIndex++;
 }
 private: System::Void btnJINGLE_Click(System::Object^ sender, System::EventArgs^ e) {
 	if (ID->SelectedIndex == -1)
@@ -847,6 +870,8 @@ private: System::Void btnJINGLE_Click(System::Object^ sender, System::EventArgs^
 	btnSINGLE->ForeColor = System::Drawing::Color::Black;
 	btnJINGLE->ForeColor = System::Drawing::Color::Red;
 
+	if (AUTO->Checked && ID->SelectedIndex < ID->Items->Count-1)
+		ID->SelectedIndex++;
 }
 private: System::Void btnPLAY_Click(System::Object^ sender, System::EventArgs^ e) {
 	if (ID->SelectedIndex == -1)

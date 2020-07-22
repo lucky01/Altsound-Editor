@@ -1,17 +1,6 @@
 /*
  * csvreader.h
  *
- *  Created on: 21.02.2019
- *
- *      Author: Stefan Rinke
- *
- *      (C) 2019 by Stefan Rinke / Rinke Solutions
- *  This work is licensed under a Creative
- *	Commons Attribution-NonCommercial-
- *	ShareAlike 4.0 International License.
- *
- *	http://creativecommons.org/licenses/by-nc-sa/4.0/
- *
  */
 
 #ifndef CSVREADER_H_

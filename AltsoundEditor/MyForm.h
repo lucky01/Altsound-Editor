@@ -12,6 +12,7 @@
 #include "csvreader.h"
 #include <iostream>
 #include "bass.h"
+#include "SimpleIni.h"
 
 
 typedef struct _pin_samples { // holds data for all sound files found
@@ -35,8 +36,17 @@ int device = -1; // Default Sounddevice
 int freq = 44100; // Sample rate (Hz)
 HSTREAM streamHandle; // Handle for open stream
 
+int duckVoice = 65;
+int duckSFX = 80;
+int duckSingle = 10;
+int duckJingle = 10;
 
+int gainVoice = 50;
+int gainSFX = 50;
+int gainSingle = 50;
+int gainJingle = 50;
 
+const char* editorFileName = "waveshop.exe";
 
 namespace AltSoundEditor {
 
@@ -517,6 +527,35 @@ private: System::Void MyForm_Closed (System::Object^  sender, System::EventArgs^
 		Marshal::FreeHGlobal((IntPtr)srcfileName);
 }
 private: System::Void MyForm_Load(System::Object^  sender, System::EventArgs^  e) {
+
+	CSimpleIniA ini;
+	//ini.SetUnicode();
+	SI_Error rc = ini.LoadFile("AltsoundEditor.ini");
+	if (rc >= 0) { 
+		editorFileName = ini.GetValue("WaveEditor", "Path", editorFileName);
+		gainVoice = ini.GetLongValue("Gain", "VOICE", gainVoice);
+		gainSFX = ini.GetLongValue("Gain", "SFX", gainSFX);
+		gainSingle = ini.GetLongValue("Gain", "SINGLE", gainSingle);
+		gainJingle = ini.GetLongValue("Gain", "JINGLE", gainJingle);
+		duckVoice = ini.GetLongValue("Ducking", "VOICE", duckVoice);
+		duckSFX = ini.GetLongValue("Ducking", "SFX", duckSFX);
+		duckSingle = ini.GetLongValue("Ducking", "SINGLE", duckSingle);
+		duckJingle = ini.GetLongValue("Ducking", "JINGLE", duckJingle);
+	}
+	else {
+		ini.SetValue("WaveEditor", "Path", editorFileName);
+		ini.SetLongValue("Gain", "VOICE", gainVoice);
+		ini.SetLongValue("Gain", "SFX", gainSFX);
+		ini.SetLongValue("Gain", "SINGLE", gainSingle);
+		ini.SetLongValue("Gain", "JINGLE", gainJingle);
+		ini.SetLongValue("Ducking", "VOICE", duckVoice);
+		ini.SetLongValue("Ducking", "SFX", duckSFX);
+		ini.SetLongValue("Ducking", "SINGLE", duckSingle);
+		ini.SetLongValue("Ducking", "JINGLE", duckJingle);
+		ini.SaveFile("AltsoundEditor.ini");
+	};
+
+
 	BASS_Init(device, freq, 0, 0, NULL);
 	for (int i = 0; i <= 1; i++) {
 		CHANNEL->Items->Add(i.ToString());
@@ -802,8 +841,8 @@ private: System::Void btnVOICE_Click(System::Object^ sender, System::EventArgs^ 
 		return;
 	int index = ID->SelectedIndex;
 	CHANNEL->SelectedIndex = psd.channel[index] = 2;
-	DUCK->SelectedIndex = psd.ducking[index] = 65;
-	GAIN->SelectedIndex = psd.gain[index] = 50;
+	DUCK->SelectedIndex = psd.ducking[index] = duckVoice;
+	GAIN->SelectedIndex = psd.gain[index] = gainVoice;
 	LOOP->SelectedIndex = psd.loop[index] = 0;
 	STOP->SelectedIndex = psd.stop[index] = 0;
 
@@ -821,8 +860,8 @@ private: System::Void btnSFX_Click(System::Object^ sender, System::EventArgs^ e)
 		return;
 	int index = ID->SelectedIndex;
 	CHANNEL->SelectedIndex = psd.channel[index] = 2;
-	DUCK->SelectedIndex = psd.ducking[index] = 80;
-	GAIN->SelectedIndex = psd.gain[index] = 50;
+	DUCK->SelectedIndex = psd.ducking[index] = duckSFX;
+	GAIN->SelectedIndex = psd.gain[index] = gainSFX;
 	LOOP->SelectedIndex = psd.loop[index] = 0;
 	STOP->SelectedIndex = psd.stop[index] = 0;
 
@@ -840,8 +879,8 @@ private: System::Void btnSINGLE_Click(System::Object^ sender, System::EventArgs^
 		return;
 	int index = ID->SelectedIndex;
 	CHANNEL->SelectedIndex = psd.channel[index] = 1;
-	DUCK->SelectedIndex = psd.ducking[index] = 10;
-	GAIN->SelectedIndex = psd.gain[index] = 50;
+	DUCK->SelectedIndex = psd.ducking[index] = duckSingle;
+	GAIN->SelectedIndex = psd.gain[index] = gainSingle;
 	LOOP->SelectedIndex = psd.loop[index] = 0;
 	STOP->SelectedIndex = psd.stop[index] = 1;
 
@@ -859,8 +898,8 @@ private: System::Void btnJINGLE_Click(System::Object^ sender, System::EventArgs^
 		return;
 	int index = ID->SelectedIndex;
 	CHANNEL->SelectedIndex = psd.channel[index] = 1;
-	DUCK->SelectedIndex = psd.ducking[index] = 10;
-	GAIN->SelectedIndex = psd.gain[index] = 50;
+	DUCK->SelectedIndex = psd.ducking[index] = duckJingle;
+	GAIN->SelectedIndex = psd.gain[index] = gainJingle;
 	LOOP->SelectedIndex = psd.loop[index] = 0;
 	STOP->SelectedIndex = psd.stop[index] = 0;
 

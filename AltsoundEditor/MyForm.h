@@ -46,7 +46,7 @@ int gainSFX = 50;
 int gainSingle = 50;
 int gainJingle = 50;
 
-const char* editorFileName = "waveshop.exe";
+char editorFileName[1024] = "waveshop.exe";
 
 namespace AltSoundEditor {
 
@@ -338,7 +338,7 @@ namespace AltSoundEditor {
 			this->FNAME->ReadOnly = true;
 			this->FNAME->Size = System::Drawing::Size(139, 20);
 			this->FNAME->TabIndex = 16;
-			this->FNAME->Click += gcnew System::EventHandler(this, &MyForm::FNAME_Click);
+			this->FNAME->MouseDown += gcnew System::Windows::Forms::MouseEventHandler(this, &MyForm::FNAME_MouseDown);
 			// 
 			// btnPLAY
 			// 
@@ -532,7 +532,8 @@ private: System::Void MyForm_Load(System::Object^  sender, System::EventArgs^  e
 	//ini.SetUnicode();
 	SI_Error rc = ini.LoadFile("AltsoundEditor.ini");
 	if (rc >= 0) { 
-		editorFileName = ini.GetValue("WaveEditor", "Path", editorFileName);
+		const char* editor = ini.GetValue("WaveEditor", "Path", editorFileName);
+		strcpy(editorFileName,const_cast<char*>(editor));
 		gainVoice = ini.GetLongValue("Gain", "VOICE", gainVoice);
 		gainSFX = ini.GetLongValue("Gain", "SFX", gainSFX);
 		gainSingle = ini.GetLongValue("Gain", "SINGLE", gainSingle);
@@ -928,17 +929,64 @@ private: System::Void btnPLAY_Click(System::Object^ sender, System::EventArgs^ e
 private: System::Void btnSTOP_Click(System::Object^ sender, System::EventArgs^ e) {
 	BASS_ChannelStop(streamHandle);
 }
-private: System::Void FNAME_Click(System::Object^ sender, System::EventArgs^ e) {
+private: System::Void FNAME_MouseDown(Object^ /*sender*/, System::Windows::Forms::MouseEventArgs^ e) {
 	if (ID->SelectedIndex == -1)
 		return;
-	if (openFileDialog1->ShowDialog() == System::Windows::Forms::DialogResult::OK)
-	{
-		int index = ID->SelectedIndex;
-		char* soundFile = (char*)Marshal::StringToHGlobalAnsi(openFileDialog1->FileName).ToPointer();
-		char* ptr = strrchr(soundFile, '\\');
-		strcpy(psd.filename[index], ptr + 1);
-		String^ strNew = gcnew String(psd.filename[index]);
-		FNAME->Text = strNew;
+	Point mouseDownLocation = Point(e->X, e->Y);
+	String^ eventString = nullptr;
+
+	int index = ID->SelectedIndex;
+	char* soundFile = (char*)malloc(strlen(srcfileName) + strlen(psd.filename[index]));
+	strcpy(soundFile, srcfileName);
+	char* ptr = strrchr(soundFile, '\\');
+	strcpy(ptr + 1, psd.filename[index]);
+
+	char* editSoundFile = (char*)malloc(strlen(editorFileName) + strlen(soundFile) + 2);
+	strcpy(editSoundFile, editorFileName);
+	strcat(editSoundFile, " ");
+	strcat(editSoundFile, soundFile);
+
+	LPSTR lpstr = const_cast<char*>(editSoundFile);
+
+
+	switch (e->Button) {
+	case System::Windows::Forms::MouseButtons::Left:
+		if (openFileDialog1->ShowDialog() == System::Windows::Forms::DialogResult::OK)
+		{
+			char* soundFile = (char*)Marshal::StringToHGlobalAnsi(openFileDialog1->FileName).ToPointer();
+			char* ptr = strrchr(soundFile, '\\');
+			strcpy(psd.filename[index], ptr + 1);
+			String^ strNew = gcnew String(psd.filename[index]);
+			FNAME->Text = strNew;
+		}
+		break;
+	case System::Windows::Forms::MouseButtons::Right:
+		STARTUPINFOA si;
+		PROCESS_INFORMATION pi;
+
+		ZeroMemory(&si, sizeof(si));
+		si.cb = sizeof(si);
+		ZeroMemory(&pi, sizeof(pi));
+
+		
+
+		CreateProcessA(NULL, 
+			lpstr,                // Command line
+			NULL,                   // Process handle not inheritable
+			NULL,                   // Thread handle not inheritable
+			FALSE,                  // Set handle inheritance to FALSE
+			CREATE_NEW_CONSOLE,     // Opens file in a separate console
+			NULL,           // Use parent's environment block
+			NULL,           // Use parent's starting directory 
+			&si,            // Pointer to STARTUPINFO structure
+			&pi           // Pointer to PROCESS_INFORMATION structure)
+		);
+
+		CloseHandle(pi.hProcess);
+		CloseHandle(pi.hThread);
+		break;
+	default:
+		break;
 	}
 }
 private: System::Void btnAdd_Click(System::Object^ sender, System::EventArgs^ e) {

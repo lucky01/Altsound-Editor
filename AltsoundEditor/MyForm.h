@@ -765,7 +765,7 @@ private: System::Void saveToolStripMenuItem_Click(System::Object^ sender, System
 	if (csvfile && psd.num_files > 0) {
 		fprintf(csvfile, "ID,CHANNEL,DUCK,GAIN,LOOP,STOP,NAME,FNAME\n");
 		for (int i = 0; i < psd.num_files; ++i) {
-			fprintf(csvfile, "0x%4X,", psd.ID[i]);
+			fprintf(csvfile, "0x%.4X,", psd.ID[i]);
 			if (psd.channel[i] == 2)
 				fprintf(csvfile, ",");
 			else
@@ -916,12 +916,22 @@ private: System::Void btnJINGLE_Click(System::Object^ sender, System::EventArgs^
 private: System::Void btnPLAY_Click(System::Object^ sender, System::EventArgs^ e) {
 	if (ID->SelectedIndex == -1)
 		return;
+	FILE* chk;
+	BASS_ChannelStop(streamHandle);
 	int index = ID->SelectedIndex;
 	char* soundFile;
 	soundFile = (char*)malloc(strlen(srcfileName) + strlen(psd.filename[index]));
 	strcpy(soundFile, srcfileName);
 	char* ptr = strrchr(soundFile, '\\');
 	strcpy(ptr + 1, psd.filename[index]);
+	if (chk = fopen(soundFile,"r"))
+		fclose(chk);
+	else {
+		if (AUTO->Checked)
+			btnDel_Click(sender, e);
+		free(soundFile);
+		return;
+	}
 	streamHandle = BASS_StreamCreateFile(FALSE, soundFile, 0, 0, 0);
 	BASS_ChannelPlay(streamHandle, FALSE);
 	free(soundFile);
@@ -1072,8 +1082,10 @@ private: System::Void btnAdd_Click(System::Object^ sender, System::EventArgs^ e)
 private: System::Void btnDel_Click(System::Object^ sender, System::EventArgs^ e) {
 	if (ID->SelectedIndex == -1)
 		return;
+
 	Pin_samples tmp;
 	Pin_samples old = psd;
+	int index = ID->SelectedIndex;
 
 	tmp.num_files = psd.num_files - 1;
 	tmp.ID = (int*)malloc((psd.num_files - 1) * sizeof(int));
@@ -1139,7 +1151,10 @@ private: System::Void btnDel_Click(System::Object^ sender, System::EventArgs^ e)
 	for (int i = 0; i < psd.num_files; i++)
 		ID->Items->Add(psd.ID[i].ToString("X4"));
 
-	ID->SelectedIndex = 0;
+	if (index <= psd.num_files)
+		ID->SelectedIndex = index;
+	else
+		ID->SelectedIndex = 0;
 }
 };
 }

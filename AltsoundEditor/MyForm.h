@@ -1151,8 +1151,8 @@ private: System::Void btnDel_Click(System::Object^ sender, System::EventArgs^ e)
 	for (int i = 0; i < psd.num_files; i++)
 		ID->Items->Add(psd.ID[i].ToString("X4"));
 
-	if (index <= psd.num_files)
-		ID->SelectedIndex = index;
+	if (index > 0)
+		ID->SelectedIndex = index -1 ;
 	else
 		ID->SelectedIndex = 0;
 }
